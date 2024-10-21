@@ -9,10 +9,10 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         super.onCreate(savedInstanceState)
 
         findViewById<StatsView>(R.id.stats).data = listOf(
-            500F,
-            500F,
-            500F,
-            500F,
+            100F,
+            200F,
+            300F,
+            400F,
         )
     }
 }

@@ -50,9 +50,16 @@ class StatsView @JvmOverloads constructor(
 
     var data: List<Float> = emptyList()
         set(value) {
-            field = value
+            field = calcPartsOf(value)
             invalidate()
         }
+
+    private fun calcPartsOf(list: List<Float>): List<Float> {
+        val sum = list.sum()
+        return list.toMutableList().map {
+            it.div(sum)
+        }
+    }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         radius = min(w, h) / 2F - lineWidth / 2

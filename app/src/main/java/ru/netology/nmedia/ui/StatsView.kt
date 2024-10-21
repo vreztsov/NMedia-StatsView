@@ -7,6 +7,7 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.core.content.withStyledAttributes
 import ru.netology.nmedia.R
 import ru.netology.nmedia.util.AndroidUtils
@@ -54,8 +55,16 @@ class StatsView @JvmOverloads constructor(
             invalidate()
         }
 
+    private var unFilled: Float = 0F
+
+    fun setDataWithUnfilled(list: List<Float>, unFilled: Float) {
+        this.unFilled = unFilled
+        this.data = list
+    }
+
+
     private fun calcPartsOf(list: List<Float>): List<Float> {
-        val sum = list.sum()
+        val sum = list.sum() + unFilled
         return list.toMutableList().map {
             it.div(sum)
         }
@@ -75,6 +84,8 @@ class StatsView @JvmOverloads constructor(
             return
         }
 
+        canvas.drawCircle(center.x, center.y, radius,
+            paint.apply { color = ContextCompat.getColor(context, R.color.divider_color) })
         var startFrom = -90F
         data.forEachIndexed { index, datum ->
             val angle = 360F * datum

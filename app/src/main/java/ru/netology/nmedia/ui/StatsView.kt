@@ -7,6 +7,7 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.core.content.withStyledAttributes
 import ru.netology.nmedia.R
 import ru.netology.nmedia.util.AndroidUtils
@@ -50,9 +51,24 @@ class StatsView @JvmOverloads constructor(
 
     var data: List<Float> = emptyList()
         set(value) {
-            field = value
+            field = calcPartsOf(value)
             invalidate()
         }
+
+    private var unFilled: Float = 0F
+
+    fun setDataWithUnfilled(list: List<Float>, unFilled: Float) {
+        this.unFilled = unFilled
+        this.data = list
+    }
+
+
+    private fun calcPartsOf(list: List<Float>): List<Float> {
+        val sum = list.sum() + unFilled
+        return list.toMutableList().map {
+            it.div(sum)
+        }
+    }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         radius = min(w, h) / 2F - lineWidth / 2
@@ -68,13 +84,16 @@ class StatsView @JvmOverloads constructor(
             return
         }
 
+        canvas.drawCircle(center.x, center.y, radius,
+            paint.apply { color = ContextCompat.getColor(context, R.color.divider_color) })
         var startFrom = -90F
-        for ((index, datum) in data.withIndex()) {
+        data.forEachIndexed { index, datum ->
             val angle = 360F * datum
             paint.color = colors.getOrNull(index) ?: randomColor()
             canvas.drawArc(oval, startFrom, angle, false, paint)
             startFrom += angle
         }
+        canvas.drawPoint(center.x, center.y - radius, paint.apply { color = colors[0] })
 
         canvas.drawText(
             "%.2f%%".format(data.sum() * 100),

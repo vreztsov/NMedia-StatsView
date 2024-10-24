@@ -25,6 +25,8 @@ class StatsView @JvmOverloads constructor(
     private var radius = 0F
     private var center = PointF(0F, 0F)
     private var oval = RectF(0F, 0F, 0F, 0F)
+    private val startAngle = -90F
+    private val fullAngle = 360F
 
     private var lineWidth = AndroidUtils.dp(context, 5F).toFloat()
     private var fontSize = AndroidUtils.dp(context, 40F).toFloat()
@@ -100,38 +102,36 @@ class StatsView @JvmOverloads constructor(
         if (data.isEmpty()) {
             return
         }
-        var startFrom = -90F
-        data.forEachIndexed { index, datum ->
-            val angle = 360F * datum
-            if (index == data.size - 1 && containsUnfilled) {
-                paint.color = ContextCompat.getColor(context, R.color.divider_color)
-            } else {
-                paint.color = colors.getOrNull(index) ?: randomColor()
-            }
-
-            canvas.drawArc(oval, startFrom + 360F * progress, angle * progress, false, paint)
-            startFrom += angle
-        }
-        if (progress > (1F - precision)) {
-            canvas.drawArc(
-                oval,
-                startFrom + 360F * progress,
-                minimalArc,
-                false,
-                paint.apply { color = colors[0] })
-
-        }
-//            canvas.drawPoint(
-//            center.x,
-//            center.y - radius,
-//            paint.apply { color = colors[0] })
-
         canvas.drawText(
             "%.2f%%".format(dataSum * 100),
             center.x,
             center.y + textPaint.textSize / 4,
             textPaint,
         )
+        var startFrom = startAngle
+        data.forEachIndexed { index, datum ->
+            val angle = fullAngle * datum
+            if (index == data.size - 1 && containsUnfilled) {
+                paint.color = ContextCompat.getColor(context, R.color.divider_color)
+            } else {
+                paint.color = colors.getOrElse(index) { randomColor() }
+            }
+            if (fullAngle * progress < startFrom + angle - startAngle) {
+                canvas.drawArc(oval, startFrom, fullAngle * progress - startFrom + startAngle, false, paint)
+                return
+            } else {
+                canvas.drawArc(oval, startFrom, angle, false, paint)
+            }
+            startFrom += angle
+        }
+        if (progress > (1F - precision)) {
+            canvas.drawArc(
+                oval,
+                startAngle,
+                minimalArc,
+                false,
+                paint.apply { color = colors[0] })
+        }
     }
 
     private fun update() {

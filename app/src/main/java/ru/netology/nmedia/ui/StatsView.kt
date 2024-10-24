@@ -36,6 +36,7 @@ class StatsView @JvmOverloads constructor(
     private val precision = 0.1F
     private val minimalArc = 0.0001F
     private var valueAnimator: ValueAnimator? = null
+    private var fillingType: Int = 0
 
     init {
         context.withStyledAttributes(attrs, R.styleable.StatsView) {
@@ -44,6 +45,18 @@ class StatsView @JvmOverloads constructor(
             val resId = getResourceId(R.styleable.StatsView_colors, 0)
             colors = resources.getIntArray(resId).toList()
         }
+        context.theme.obtainStyledAttributes(
+            attrs,
+            R.styleable.StatsView,
+            0, 0
+        ).apply {
+            try {
+                fillingType = getInteger(R.styleable.StatsView_fillingType, fillingType)
+            } finally {
+                recycle()
+            }
+        }
+
     }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -116,22 +129,51 @@ class StatsView @JvmOverloads constructor(
             } else {
                 paint.color = colors.getOrElse(index) { randomColor() }
             }
-            if (fullAngle * progress < startFrom + angle - startAngle) {
-                canvas.drawArc(oval, startFrom, fullAngle * progress - startFrom + startAngle, false, paint)
-                return
-            } else {
-                canvas.drawArc(oval, startFrom, angle, false, paint)
+            when (fillingType) {
+                1 -> {
+                    canvas.drawArc(
+                        oval,
+                        startFrom + 360F * progress,
+                        angle * progress,
+                        false,
+                        paint
+                    )
+                }
+                2 -> {
+                    if (fullAngle * progress < startFrom + angle - startAngle) {
+                        canvas.drawArc(
+                            oval,
+                            startFrom,
+                            fullAngle * progress - startFrom + startAngle,
+                            false,
+                            paint
+                        )
+                        return
+                    } else {
+                        canvas.drawArc(oval, startFrom, angle, false, paint)
+                    }
+                }
+
+                else -> {
+                    canvas.drawArc(oval, startFrom, angle, false, paint)
+                }
             }
             startFrom += angle
         }
-        if (progress > (1F - precision)) {
-            canvas.drawArc(
-                oval,
-                startAngle,
-                minimalArc,
-                false,
-                paint.apply { color = colors[0] })
+        when (fillingType) {
+            1 -> {
+                if (progress > (1F - precision)) {
+                    canvas.drawArc(
+                        oval,
+                        startFrom,
+                        minimalArc,
+                        false,
+                        paint.apply { color = colors[0] })
+                }
+            }
+            else -> canvas.drawPoint(center.x, center.y - radius, paint.apply { color = colors[0] })
         }
+
     }
 
     private fun update() {

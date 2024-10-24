@@ -139,6 +139,7 @@ class StatsView @JvmOverloads constructor(
                         paint
                     )
                 }
+
                 2 -> {
                     if (fullAngle * progress < startFrom + angle - startAngle) {
                         canvas.drawArc(
@@ -154,6 +155,23 @@ class StatsView @JvmOverloads constructor(
                     }
                 }
 
+                3 -> {
+                    canvas.drawArc(
+                        oval,
+                        startFrom + angle / 2,
+                        angle / 2 * progress,
+                        false,
+                        paint
+                    )
+                    canvas.drawArc(
+                        oval,
+                        startFrom + angle / 2,
+                        -angle / 2 * progress,
+                        false,
+                        paint
+                    )
+                }
+
                 else -> {
                     canvas.drawArc(oval, startFrom, angle, false, paint)
                 }
@@ -161,7 +179,7 @@ class StatsView @JvmOverloads constructor(
             startFrom += angle
         }
         when (fillingType) {
-            1 -> {
+            1,3 -> {
                 if (progress > (1F - precision)) {
                     canvas.drawArc(
                         oval,

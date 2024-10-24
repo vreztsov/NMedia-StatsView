@@ -8,6 +8,7 @@
             <enum name="standard" value="0" />
             <enum name="rotation" value="1" />
             <enum name="sequential" value="2" />
+            <enum name="bidirectional" value="3" />
         </attr>
     </declare-styleable>
 </resources>

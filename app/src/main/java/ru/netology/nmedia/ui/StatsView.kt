@@ -31,6 +31,8 @@ class StatsView @JvmOverloads constructor(
     private var colors = emptyList<Int>()
 
     private var progress = 0F
+    private val precision = 0.1F
+    private val minimalArc = 0.0001F
     private var valueAnimator: ValueAnimator? = null
 
     init {
@@ -61,17 +63,27 @@ class StatsView @JvmOverloads constructor(
         }
 
     private var unFilled: Float = 0F
+    private var containsUnfilled = false
+    private var dataSum = 0F
 
     fun setDataWithUnfilled(list: List<Float>, unFilled: Float) {
         this.unFilled = unFilled
+        this.containsUnfilled = true
         this.data = list
     }
 
 
     private fun calcPartsOf(list: List<Float>): List<Float> {
-        val sum = list.sum() + unFilled
-        return list.toMutableList().map {
+        val listSum = list.sum()
+        val sum = listSum + unFilled
+        val result = list.toMutableList().map {
             it.div(sum)
+        }
+        dataSum = listSum.div(sum)
+        return if (containsUnfilled) {
+            result + unFilled.div(sum)
+        } else {
+            result
         }
     }
 
@@ -88,20 +100,34 @@ class StatsView @JvmOverloads constructor(
         if (data.isEmpty()) {
             return
         }
-
-        canvas.drawCircle(center.x, center.y, radius,
-            paint.apply { color = ContextCompat.getColor(context, R.color.divider_color) })
         var startFrom = -90F
         data.forEachIndexed { index, datum ->
             val angle = 360F * datum
-            paint.color = colors.getOrNull(index) ?: randomColor()
-            canvas.drawArc(oval, startFrom, angle * progress, false, paint)
+            if (index == data.size - 1 && containsUnfilled) {
+                paint.color = ContextCompat.getColor(context, R.color.divider_color)
+            } else {
+                paint.color = colors.getOrNull(index) ?: randomColor()
+            }
+
+            canvas.drawArc(oval, startFrom + 360F * progress, angle * progress, false, paint)
             startFrom += angle
         }
-        canvas.drawPoint(center.x, center.y - radius, paint.apply { color = colors[0] })
+        if (progress > (1F - precision)) {
+            canvas.drawArc(
+                oval,
+                startFrom + 360F * progress,
+                minimalArc,
+                false,
+                paint.apply { color = colors[0] })
+
+        }
+//            canvas.drawPoint(
+//            center.x,
+//            center.y - radius,
+//            paint.apply { color = colors[0] })
 
         canvas.drawText(
-            "%.2f%%".format(data.sum() * 100),
+            "%.2f%%".format(dataSum * 100),
             center.x,
             center.y + textPaint.textSize / 4,
             textPaint,
@@ -120,10 +146,12 @@ class StatsView @JvmOverloads constructor(
                 progress = anim.animatedValue as Float
                 invalidate()
             }
-            duration = 500
+            duration = 5000
             interpolator = LinearInterpolator()
+
         }.also {
             it.start()
+
         }
     }
 

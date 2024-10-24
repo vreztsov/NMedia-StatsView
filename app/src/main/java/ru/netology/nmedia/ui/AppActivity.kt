@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.os.Bundle
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.view.animation.BounceInterpolator
@@ -18,12 +19,12 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         super.onCreate(savedInstanceState)
 
         val view = findViewById<StatsView>(R.id.stats)
-        view.setDataWithUnfilled(listOf(
-            100F,
-            200F,
-            300F,
-            400F,
-        ), 200F)
+        view.data = listOf(
+            500F,
+            500F,
+            500F,
+            500F,
+        )
 
         // Пример 1 android.view.animation
 //        val label = findViewById<TextView>(R.id.label)
@@ -67,12 +68,11 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
 // Пример 4 Анимация нескольких свойств через PropertyValuesHolder
 //        val rotation = PropertyValuesHolder.ofFloat(View.ROTATION, 0F, 360F)
-//        val alpha = PropertyValuesHolder.ofFloat(View.ALPHA, 0F, 1F)
-//        ObjectAnimator.ofPropertyValuesHolder(view, rotation, alpha)
+//        ObjectAnimator.ofPropertyValuesHolder(view, rotation)
 //            .apply {
 //                startDelay = 500
 //                duration = 500
-//                interpolator = LinearInterpolator()
+//                interpolator = AccelerateDecelerateInterpolator()
 //            }.start()
 // Конец примера 4
 
